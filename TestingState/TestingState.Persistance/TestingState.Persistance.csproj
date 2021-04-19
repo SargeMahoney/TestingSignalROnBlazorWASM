@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\TestingState.Shared.csproj" />
+    <ProjectReference Include="..\TestingState.Application\TestingState.Application.csproj" />
+  </ItemGroup>
+
+</Project>

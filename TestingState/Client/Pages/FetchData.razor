@@ -1,0 +1,77 @@
+﻿@page "/fetchdata"
+@using TestingState.Shared
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-primary" @onclick="Add">Add</button>
+}
+
+@code {
+    private WeatherForecast[] forecasts;
+    private HubConnection hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {       
+        await ConfigureHubConnection();
+        await Refresh();
+    }
+
+    public async Task ConfigureHubConnection()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/weatherHub"))
+        .Build();
+
+        hubConnection.On("RefreshWeathers", async () =>
+        {
+            await Refresh();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    protected async Task Add()
+    {
+        await Http.PostAsJsonAsync("WeatherForecast/Add", new WeatherForecast());
+
+    }
+
+    public async Task Refresh()
+    {
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+        StateHasChanged();
+    }
+
+}

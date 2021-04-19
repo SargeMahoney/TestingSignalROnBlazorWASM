@@ -1,0 +1,34 @@
+﻿@inject IJSRuntime _js
+@inject NavigationManager NavigationManager
+@inject IToastService toastService
+
+@code {
+
+    private HubConnection hubConnection;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ConfigureHubConnection();
+    }
+
+    public async Task ConfigureHubConnection()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/notificationHub"))
+        .Build();
+
+        hubConnection.On("ShowInfoNotification", async (string message, string title) =>
+        {
+            await ShowInfoNotification(message, title);
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    public async Task ShowInfoNotification(string message, string title)
+    {
+        await Task.Delay(100);
+        toastService.ShowInfo(message, title);
+    }
+}
